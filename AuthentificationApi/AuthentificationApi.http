@@ -1,0 +1,17 @@
+@AuthentificationApi_HostAddress = http://localhost:5120
+
+### Connexion d'un utilisateur existant (API de gestion requise)
+POST {{AuthentificationApi_HostAddress}}/api/authentication/login
+Content-Type: application/json
+
+{
+  "login": "user1"
+}
+
+### Login inexistant (API de gestion requise)
+POST {{AuthentificationApi_HostAddress}}/api/authentication/login
+Content-Type: application/json
+
+{
+  "login": "unknown-user"
+}

@@ -1,0 +1,67 @@
+@page "/reparations"
+@inject GestionOrdinateurs.Client.Services.GatewayApiClient Api
+
+<PageTitle>Historique des réparations</PageTitle>
+
+<h1>Historique des réparations</h1>
+
+@if (isLoading)
+{
+    <p><em>Chargement de l'historique...</em></p>
+}
+else if (errorMessage is not null)
+{
+    <p class="text-danger" role="alert">@errorMessage</p>
+}
+else if (reparations is { Count: 0 })
+{
+    <p>Aucune réparation à afficher.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ordinateur</th>
+                <th>Technicien</th>
+                <th>Type de réparation</th>
+                <th>Date d'intervention</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var reparation in reparations ?? [])
+            {
+                <tr>
+                    <td>@reparation.NomOrdinateur</td>
+                    <td>@reparation.Technicien</td>
+                    <td>@reparation.TypeReparation</td>
+                    <td>@reparation.DateIntervention.ToLocalTime().ToString("g")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<GestionOrdinateurs.Client.Services.HistoriqueReparationItem>? reparations;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            reparations = await Api.GetHistoriqueReparationsAsync();
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = exception.StatusCode is null
+                ? "La Gateway est indisponible."
+                : $"Impossible de charger l'historique (HTTP {(int)exception.StatusCode}).";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

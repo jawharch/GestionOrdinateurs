@@ -1,0 +1,28 @@
+## .NET
+**/bin/
+**/obj/
+**/out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio / VS Code
+.vs/
+.vscode/*
+!.vscode/extensions.json
+
+## User-specific and local environment files
+.env
+.env.*
+!.env.example
+secrets/
+
+## Logs and local databases
+**/Logs/
+**/*.db-shm
+**/*.db-wal
+
+## OS
+.DS_Store
+Thumbs.db

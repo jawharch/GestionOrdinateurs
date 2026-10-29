@@ -1,0 +1,148 @@
+@GestionOrdinateurs.API_HostAddress = http://localhost:5010
+
+### Récupérer tous les utilisateurs
+GET {{GestionOrdinateurs.API_HostAddress}}/api/users
+Accept: application/json
+
+###
+
+### Récupérer un utilisateur par login
+GET {{GestionOrdinateurs.API_HostAddress}}/api/users/user1
+Accept: application/json
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/ordinateurs
+Content-Type: application/json
+
+{
+  "id": 1,
+  "nom": "Dell XPS",
+  "marque": "Dell",
+  "etat": "EnStock",
+  "stock": 4,
+  "prix": 1299.99,
+  "caracteristiques": {
+    "ramGo": 16,
+    "typeOrdi": "Portable",
+    "stockageGo": 1024,
+    "processeur": "Intel Core i7",
+    "tailleEcran": 15.6,
+    "autonomieHeures": 8,
+    "puissanceW": 0,
+    "carteGraphique": true
+  }
+}
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/ordinateurs
+Content-Type: application/json
+
+{
+  "id": 2,
+  "nom": "ThinkPad T14",
+  "marque": "Lenovo",
+  "etat": "EnStock",
+  "stock": 3,
+  "prix": 999.99,
+  "caracteristiques": {
+    "ramGo": 16,
+    "typeOrdi": "Portable",
+    "stockageGo": 512,
+    "processeur": "AMD Ryzen 7"
+  }
+}
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/ordinateurs
+Content-Type: application/json
+
+{
+  "id": 3,
+  "nom": "ProDesk 600",
+  "marque": "HP",
+  "etat": "EnStock",
+  "stock": 2,
+  "prix": 849.50,
+  "caracteristiques": {
+    "ramGo": 16,
+    "typeOrdi": "Fixe",
+    "stockageGo": 512,
+    "processeur": "Intel Core i5",
+    "puissanceW": 300
+  }
+}
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/ordinateurs
+Content-Type: application/json
+
+{
+  "id": 4,
+  "nom": "PowerStation",
+  "marque": "ASUS",
+  "etat": "EnService",
+  "stock": 1,
+  "prix": 1899.00,
+  "caracteristiques": {
+    "ramGo": 32,
+    "typeOrdi": "Fixe",
+    "stockageGo": 2048,
+    "processeur": "Intel Core i9",
+    "puissanceW": 750,
+    "carteGraphique": true
+  }
+}
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/ordinateurs
+Content-Type: application/json
+
+{
+  "id": 5,
+  "nom": "RackServer R1",
+  "marque": "Dell",
+  "etat": "EnStock",
+  "stock": 1,
+  "prix": 2499.00,
+  "caracteristiques": {
+    "ramGo": 64,
+    "typeOrdi": "Server",
+    "stockageGo": 4096,
+    "processeur": "AMD EPYC",
+    "puissanceW": 800
+  }
+}
+
+###
+
+GET {{GestionOrdinateurs.API_HostAddress}}/api/ordinateurs
+Accept: application/json
+
+###
+
+POST {{GestionOrdinateurs.API_HostAddress}}/api/reparations/SimulerReparation
+
+###
+
+GET {{GestionOrdinateurs.API_HostAddress}}/api/reparations/historique
+Accept: application/json
+
+###
+
+GET {{GestionOrdinateurs.API_HostAddress}}/api/ordinateurs/1/diagnostic
+Accept: application/json
+
+###
+
+GET {{GestionOrdinateurs.API_HostAddress}}/api/ordinateurs/statistiques
+Accept: application/json
+
+###
+
+GET {{GestionOrdinateurs.API_HostAddress}}/api/ordinateurs/inventaire/Dell%20XPS
+Accept: application/json

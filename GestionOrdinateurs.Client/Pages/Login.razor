@@ -1,0 +1,91 @@
+@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using System.Net
+@using System.Net.Http.Json
+@using GestionOrdinateurs.Client.Services
+@inject IHttpClientFactory HttpClientFactory
+@inject SessionAuthenticationStateProvider AuthenticationState
+@inject NavigationManager Navigation
+
+<PageTitle>Connexion</PageTitle>
+
+<h1>Connexion</h1>
+
+<EditForm Model="@model" OnValidSubmit="ConnecterAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="login" class="form-label">Login</label>
+        <InputText id="login" class="form-control" @bind-Value="model.Login" />
+    </div>
+
+    <button type="submit" class="btn btn-primary" disabled="@isLoading">
+        @(isLoading ? "Connexion..." : "Se connecter")
+    </button>
+</EditForm>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <p class="text-danger mt-3" role="alert">@errorMessage</p>
+}
+
+@code {
+    private readonly LoginForm model = new();
+    private bool isLoading;
+    private string? errorMessage;
+
+    private async Task ConnecterAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("AuthenticationApi");
+            using var response = await client.PostAsJsonAsync(
+                "api/authentication/login",
+                new LoginRequest(model.Login));
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                errorMessage = "Cet utilisateur n'existe pas.";
+                return;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = response.StatusCode == HttpStatusCode.ServiceUnavailable
+                    ? "Le service des utilisateurs est indisponible."
+                    : $"La connexion a échoué (HTTP {(int)response.StatusCode}).";
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            if (string.IsNullOrWhiteSpace(result?.Token))
+            {
+                errorMessage = "La réponse de connexion ne contient pas de jeton.";
+                return;
+            }
+
+            await AuthenticationState.SignInAsync(result.Token);
+            Navigation.NavigateTo("/");
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "Impossible de joindre l'API d'authentification.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private sealed class LoginForm
+    {
+        [Required(ErrorMessage = "Saisissez votre login.")]
+        public string Login { get; set; } = string.Empty;
+    }
+
+    private sealed record LoginRequest(string Login);
+    private sealed record LoginResponse(string Token, DateTimeOffset ExpiresAtUtc);
+}

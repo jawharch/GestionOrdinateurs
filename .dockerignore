@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/.vs/
+**/Logs/
+**/*.db
+.git/
+.env
+.env.*
+!.env.example
+*.user
+*.suo

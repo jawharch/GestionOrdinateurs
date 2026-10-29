@@ -1,0 +1,67 @@
+@page "/ordinateurs"
+@inject GestionOrdinateurs.Client.Services.GatewayApiClient Api
+
+<PageTitle>Ordinateurs</PageTitle>
+
+<h1>Ordinateurs</h1>
+
+@if (isLoading)
+{
+    <p><em>Chargement des ordinateurs...</em></p>
+}
+else if (errorMessage is not null)
+{
+    <p class="text-danger" role="alert">@errorMessage</p>
+}
+else if (ordinateurs is { Count: 0 })
+{
+    <p>Aucun ordinateur à afficher.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Devise</th>
+                <th>Vendu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ordinateur in ordinateurs ?? [])
+            {
+                <tr>
+                    <td>@ordinateur.Nom</td>
+                    <td>@ordinateur.Prix.ToString("F2")</td>
+                    <td>@ordinateur.Devise</td>
+                    <td>@(ordinateur.Vendu ? "Oui" : "Non")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<GestionOrdinateurs.Client.Services.OrdinateurListeItem>? ordinateurs;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            ordinateurs = await Api.GetOrdinateursAsync();
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = exception.StatusCode is null
+                ? "La Gateway est indisponible."
+                : $"Impossible de charger les ordinateurs (HTTP {(int)exception.StatusCode}).";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

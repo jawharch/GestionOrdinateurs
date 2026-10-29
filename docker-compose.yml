@@ -1,0 +1,105 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: GestionOrdinateursDb
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-1234}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local-root-password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u\"$${MYSQL_USER}\" -p\"$${MYSQL_PASSWORD}\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - appnet
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8180
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+    ports:
+      - "8180:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    networks:
+      - appnet
+
+  gestionordinateurs-api:
+    image: ${DOCKER_ACCOUNT:-local}/gestionordinateurs-api:latest
+    build:
+      context: .
+      dockerfile: GestionOrdinateurs.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=GestionOrdinateursDb;User=${MYSQL_USER:-user};Password=${MYSQL_PASSWORD:-1234};"
+      Jwt__Key: ${JWT_KEY:-dev-only-signing-key-change-before-deployment-2026}
+    ports:
+      - "5113:5113"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - appnet
+
+  authentification-api:
+    image: ${DOCKER_ACCOUNT:-local}/authentificationapi:latest
+    build:
+      context: .
+      dockerfile: AuthentificationApi/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      UserApi__BaseUrl: http://gestionordinateurs-api:5113/
+      Jwt__Key: ${JWT_KEY:-dev-only-signing-key-change-before-deployment-2026}
+    ports:
+      - "5120:5120"
+    depends_on:
+      - gestionordinateurs-api
+    networks:
+      - appnet
+
+  gateway:
+    image: ${DOCKER_ACCOUNT:-local}/gestionordinateurs-gateway:latest
+    build:
+      context: .
+      dockerfile: GestionOrdinateurs.Gateway/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ReverseProxy__Clusters__gestion-ordinateurs-api__Destinations__gestion-ordinateurs-api__Address: http://gestionordinateurs-api:5113/
+    ports:
+      - "5010:5010"
+    depends_on:
+      - gestionordinateurs-api
+    networks:
+      - appnet
+
+  client:
+    image: ${DOCKER_ACCOUNT:-local}/gestionordinateurs-client:latest
+    build:
+      context: .
+      dockerfile: GestionOrdinateurs.Client/Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - authentification-api
+      - gateway
+    networks:
+      - appnet
+
+volumes:
+  mysql_data:
+  keycloak_data:
+
+networks:
+  appnet:
+    driver: bridge

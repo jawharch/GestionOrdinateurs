@@ -1,0 +1,12 @@
+@GestionOrdinateurs.Gateway_HostAddress = http://localhost:5010
+@token = replace-with-a-token-from-AuthentificationApi
+
+### Liste des ordinateurs via la Gateway
+GET {{GestionOrdinateurs.Gateway_HostAddress}}/api/ordinateurs/liste
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### Historique des réparations via la Gateway
+GET {{GestionOrdinateurs.Gateway_HostAddress}}/api/reparations/historique
+Authorization: Bearer {{token}}
+Accept: application/json
